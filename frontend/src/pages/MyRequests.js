@@ -6,6 +6,7 @@ const MyRequests = () => {
   // Keeping track of the requests data, current filter status, and UI states (loading, error).
   const [requests, setRequests] = useState([]);
   const [status, setStatus] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -18,9 +19,15 @@ const MyRequests = () => {
       const response = await api.get('/api/requests/my', {
         params: status ? { status } : {},
       });
-      // Safety first: fallback to an empty array if the API happens to return null/undefined. 
-      // This saves our render method from crashing when evaluating .length or calling .map().
-      setRequests(response.data || []);
+      // Safety first: fallback to an empty array if the API happens to return null/undefined.
+      let data = response.data || [];
+      // Apply client-side sort by updatedAt
+      data = data.sort((a, b) => {
+        const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+        const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+        return sortOrder === 'asc' ? ta - tb : tb - ta;
+      });
+      setRequests(data);
     } catch (err) {
       setError('Failed to load your requests.');
       setRequests([]);
@@ -34,6 +41,17 @@ const MyRequests = () => {
   useEffect(() => {
     loadRequests();
   }, [status]);
+
+  // Resort the currently loaded requests when sortOrder changes
+  useEffect(() => {
+    setRequests((prev) => {
+      return [...prev].sort((a, b) => {
+        const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+        const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+        return sortOrder === 'asc' ? ta - tb : tb - ta;
+      });
+    });
+  }, [sortOrder]);
 
   return (
     <div className="page-card">
@@ -55,6 +73,17 @@ const MyRequests = () => {
             <option value="FULFILLED">Fulfilled</option>
           </select>
         </label>
+        <div style={{ marginLeft: 12 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            }}
+          >
+            Sort by Updated ({sortOrder === 'asc' ? 'Oldest' : 'Newest'})
+          </button>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

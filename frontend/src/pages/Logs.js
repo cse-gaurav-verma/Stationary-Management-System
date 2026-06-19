@@ -43,18 +43,15 @@ const Logs = () => {
           <tbody>
             {logs.length === 0 && (
               <tr>
-                <td colSpan={7} className="empty-row">No logs available</td>
+                <td colSpan={4} className="empty-row">No logs available</td>
               </tr>
             )}
             {logs.map((l) => (
               <tr key={l.id}>
                 <td>{l.username || ''}</td>
                 <td>{l.action || ''}</td>
-                <td>{l.entity || ''}</td>
-                <td>{l.entityId != null ? l.entityId : ''}</td>
-                <td style={{ maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.previousValue || ''}</td>
-                <td style={{ maxWidth: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.newValue || ''}</td>
-                <td>{l.timestamp ? new Date(l.timestamp).toLocaleString() : ''}</td>
+                <td style={{ maxWidth: 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.newValue || ''}</td>
+                <td>{l.timestamp ? new Date(l.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : ''}</td>
               </tr>
             ))}
           </tbody>
