@@ -1,12 +1,17 @@
 # Stage 1: Build the React application
 FROM node:18-alpine AS build
 
+# Allow injecting the API base URL at build time (docker build --build-arg REACT_APP_API_URL=...)
+ARG REACT_APP_API_URL
+ENV REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8090}
+
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
 RUN npm install --silent
 
 COPY . .
+# Build will read REACT_APP_API_URL from environment at build time
 RUN npm run build
 
 # Stage 2: Serve with Nginx

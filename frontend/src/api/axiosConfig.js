@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // We set up a base axios instance here so we don't have to keep passing the baseURL and headers
 // everywhere. We also add a timeout so the frontend doesn't just hang forever if the backend is slow or down.
-const API_BASE_URL = process.env.REACT_APP_API_URL;
+// Support multiple env var names and a sensible default (matches docker-compose mapping).
+const API_BASE_URL = process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || 'http://localhost:8090';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
