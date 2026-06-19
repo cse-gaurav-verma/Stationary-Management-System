@@ -1,0 +1,25 @@
+package com.stationery.request.client;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Map;
+
+import com.stationery.request.dto.InventoryItemDto;
+
+@FeignClient(name = "inventory-service")
+public interface InventoryClient {
+
+    @GetMapping("/api/inventory/{id}")
+    ResponseEntity<InventoryItemDto> getInventoryItem(@PathVariable("id") Long id);
+
+    @PutMapping("/api/inventory/{id}/deduct")
+        ResponseEntity<Boolean> deductItemQuantity(
+        @PathVariable("id") Long id,
+        @RequestParam("quantity") Integer quantity
+    );
+}
