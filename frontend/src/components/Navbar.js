@@ -41,6 +41,7 @@ const Navbar = () => {
     { path: '/inventory', label: 'Inventory' },
     { path: '/inventory/add', label: 'Add Item' },
     { path: '/requests/manage', label: 'Manage Requests' },
+    { path: '/logs', label: 'Logs' },
   ];
 
   const studentLinks = [

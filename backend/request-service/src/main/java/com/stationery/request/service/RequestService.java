@@ -26,39 +26,44 @@ public class RequestService {
 
     private final RequestRepository requestRepository;
     private final InventoryClient inventoryClient;
+    private final com.stationery.request.service.AuditService auditService;
 
-    public RequestService(RequestRepository requestRepository, InventoryClient inventoryClient) {
+    public RequestService(RequestRepository requestRepository, InventoryClient inventoryClient, com.stationery.request.service.AuditService auditService) {
         this.requestRepository = requestRepository;
         this.inventoryClient = inventoryClient;
+        this.auditService = auditService;
     }
 
     // Creates a new request. By default, it goes into PENDING state so admins can review it later.
-    @Transactional
-    public RequestResponse createRequest(String username, CreateRequestDto createRequestDto) {
+        @Transactional
+        public RequestResponse createRequest(String username, CreateRequestDto createRequestDto) {
         log.info("AUDIT: Creating new stationery request for student: {}", username);
 
         StationeryRequest request = StationeryRequest.builder()
-                .studentUsername(username)
-                .status(RequestStatus.PENDING)
-                .build();
+            .studentUsername(username)
+            .status(RequestStatus.PENDING)
+            .build();
 
-        // Tie each requested item back to the main request entity before saving.
-        // The cascading setup in the entity handles saving these child records.
         for (RequestItemDto itemDto : createRequestDto.getItems()) {
             RequestItem item = RequestItem.builder()
-                    .itemId(itemDto.getItemId())
-                    .itemName(itemDto.getItemName())
-                    .quantity(itemDto.getQuantity())
-                    .build();
+                .itemId(itemDto.getItemId())
+                .itemName(itemDto.getItemName())
+                .quantity(itemDto.getQuantity())
+                .build();
             request.addItem(item);
         }
 
         StationeryRequest savedRequest = requestRepository.save(request);
         log.info("AUDIT: Stationery request created successfully. RequestId: {}, Student: {}, Items: {}",
-                savedRequest.getRequestId(), username, createRequestDto.getItems().size());
+            savedRequest.getRequestId(), username, createRequestDto.getItems().size());
+
+        // Persist audit log
+        if (auditService != null) {
+            auditService.log(username, "CREATE", "StationeryRequest", savedRequest.getId(), null, savedRequest.getRequestId());
+        }
 
         return mapToResponse(savedRequest);
-    }
+        }
 
     // Grabbing a request by its internal DB ID. We throw a standard 404-ish exception if it's missing.
     @Transactional(readOnly = true)
@@ -189,7 +194,11 @@ public class RequestService {
         savedRequest.getItems().size();
 
         log.info("AUDIT: Request ID: {} approved by admin '{}'. All inventory deductions successful.",
-                id, adminUsername);
+            id, adminUsername);
+
+        if (auditService != null) {
+            auditService.log(adminUsername, "APPROVE", "StationeryRequest", savedRequest.getId(), "PENDING", "APPROVED");
+        }
 
         return mapToResponse(savedRequest);
     }
@@ -218,6 +227,10 @@ public class RequestService {
 
         log.info("AUDIT: Request ID: {} rejected by admin '{}'.", id, adminUsername);
 
+        if (auditService != null) {
+            auditService.log(adminUsername, "REJECT", "StationeryRequest", savedRequest.getId(), "PENDING", "REJECTED");
+        }
+
         return mapToResponse(savedRequest);
     }
 
@@ -243,6 +256,10 @@ public class RequestService {
         savedRequest.getItems().size();
 
         log.info("AUDIT: Request ID: {} fulfilled successfully.", id);
+
+        if (auditService != null) {
+            auditService.log("SYSTEM", "FULFILL", "StationeryRequest", savedRequest.getId(), "APPROVED", "FULFILLED");
+        }
 
         return mapToResponse(savedRequest);
     }

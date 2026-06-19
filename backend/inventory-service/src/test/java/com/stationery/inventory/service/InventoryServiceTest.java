@@ -34,6 +34,12 @@ class InventoryServiceTest {
     @Mock
     private StationeryItemRepository stationeryItemRepository;
 
+    @Mock
+    private AuditService auditService;
+
+    @Mock
+    private CategoryService categoryService;
+
     @InjectMocks
     private InventoryService inventoryService;
 

@@ -49,7 +49,8 @@ const CreateRequest = () => {
   };
 
   const removeItem = (index) => {
-    setRequestItems((prev) => prev.filter((_, idx) => idx !== index));
+    // Prevent removing the last row - keep at least one row visible
+    setRequestItems((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== index) : prev));
   };
 
   const handleSubmit = async (e) => {
@@ -103,6 +104,12 @@ const CreateRequest = () => {
 
       {/* The form dynamically maps over requestItems to build our row fields */}
       <form className="request-grid" onSubmit={handleSubmit}>
+        <div style={{ marginBottom: 12 }}>
+          <button type="button" className="btn btn-secondary" disabled={loading} onClick={addItem}>
+            Add Item
+          </button>
+        </div>
+
         {requestItems.map((row, index) => (
           <div className="request-row" key={index}>
             <select
@@ -125,7 +132,12 @@ const CreateRequest = () => {
               disabled={loading}
               placeholder="Qty"
             />
-            <button type="button" className="btn btn-danger" disabled={loading} onClick={() => removeItem(index)}>
+            <button
+              type="button"
+              className="btn btn-danger"
+              disabled={loading || requestItems.length === 1}
+              onClick={() => removeItem(index)}
+            >
               Remove
             </button>
           </div>

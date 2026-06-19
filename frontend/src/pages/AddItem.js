@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import './FormPage.css';
@@ -20,7 +20,20 @@ const AddItem = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const resp = await api.get('/api/inventory/categories');
+        setCategories(resp.data || []);
+      } catch (e) {
+        // ignore - fall back to free text if categories not available
+      }
+    };
+    loadCategories();
+  }, []);
 
   // Standard controlled component pattern. We rely on the input's "name" attribute 
   // to dynamically update the right property in our form state object.
@@ -86,7 +99,16 @@ const AddItem = () => {
         </label>
         <label>
           Category <span className="required">*</span>
-          <input name="category" value={form.category} onChange={handleChange} disabled={loading} />
+          {categories.length ? (
+            <select name="category" value={form.category} onChange={handleChange} disabled={loading}>
+              <option value="">Select category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.name}>{c.name}</option>
+              ))}
+            </select>
+          ) : (
+            <input name="category" value={form.category} onChange={handleChange} disabled={loading} />
+          )}
         </label>
         <label>
           Unit <span className="required">*</span>

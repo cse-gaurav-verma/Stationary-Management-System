@@ -21,6 +21,7 @@ const EditItem = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   // We want to fetch the item's existing data right when the component mounts 
   // or if the ID somehow changes.
@@ -48,6 +49,17 @@ const EditItem = () => {
         setLoading(false);
       }
     };
+
+    const loadCategories = async () => {
+      try {
+        const resp = await api.get('/api/inventory/categories');
+        setCategories(resp.data || []);
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    loadCategories();
 
     loadItem();
   }, [id]);
@@ -112,7 +124,16 @@ const EditItem = () => {
         </label>
         <label>
           Category <span className="required">*</span>
-          <input name="category" value={form.category} onChange={handleChange} disabled={loading} />
+          {categories.length ? (
+            <select name="category" value={form.category} onChange={handleChange} disabled={loading}>
+              <option value="">Select category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.name}>{c.name}</option>
+              ))}
+            </select>
+          ) : (
+            <input name="category" value={form.category} onChange={handleChange} disabled={loading} />
+          )}
         </label>
         <label>
           Unit <span className="required">*</span>

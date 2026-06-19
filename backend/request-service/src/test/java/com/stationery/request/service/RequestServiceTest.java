@@ -237,8 +237,9 @@ class RequestServiceTest {
     void approveRequest_InventoryClientFeignException() {
         // Arrange
         when(requestRepository.findById(1L)).thenReturn(Optional.of(sampleRequest));
-        when(inventoryClient.getInventoryItem(eq(1L)))
-    .thenThrow(new RuntimeException("Inventory service unavailable"));
+        FeignException feignException = org.mockito.Mockito.mock(FeignException.class);
+        when(feignException.getMessage()).thenReturn("Inventory service unavailable");
+        when(inventoryClient.getInventoryItem(eq(1L))).thenThrow(feignException);
 
         // Act & Assert
         RuntimeException exception = assertThrows(

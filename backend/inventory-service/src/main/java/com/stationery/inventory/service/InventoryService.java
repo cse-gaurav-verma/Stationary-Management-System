@@ -24,17 +24,26 @@ import java.util.stream.Collectors;
 public class InventoryService {
 
     private static final Logger log = LoggerFactory.getLogger(InventoryService.class);
-    private final StationeryItemRepository stationeryItemRepository;
+        private final StationeryItemRepository stationeryItemRepository;
+        private final com.stationery.inventory.service.AuditService auditService;
+        private final com.stationery.inventory.service.CategoryService categoryService;
 
-    // Constructor injection - Spring auto-wires repository
-    public InventoryService(StationeryItemRepository stationeryItemRepository) {
-        this.stationeryItemRepository = stationeryItemRepository;
-    }
+        // Constructor injection - Spring auto-wires repository
+        public InventoryService(StationeryItemRepository stationeryItemRepository,
+                                                        com.stationery.inventory.service.AuditService auditService,
+                                                        com.stationery.inventory.service.CategoryService categoryService) {
+                this.stationeryItemRepository = stationeryItemRepository;
+                this.auditService = auditService;
+                this.categoryService = categoryService;
+        }
 
     // Create new item. Uppercase category to prevent data inconsistency. Security (admin check) is at controller layer.
     @Transactional
     public StationeryItemResponse createItem(StationeryItemRequest request) {
         log.info("AUDIT: Creating new stationery item with name: '{}'", request.getName());
+
+        // Ensure category exists (create if missing) so categories remain consistent across items
+        categoryService.createCategory(request.getCategory());
 
         StationeryItem item = StationeryItem.builder()
                 .name(request.getName())
@@ -48,6 +57,8 @@ public class InventoryService {
         StationeryItem savedItem = stationeryItemRepository.save(item);
         log.info("AUDIT: Successfully created stationery item with ID: {}, name: '{}'",
                 savedItem.getId(), savedItem.getName());
+
+        auditService.log("SYSTEM", "CREATE", "StationeryItem", savedItem.getId(), null, savedItem.getName());
 
         return mapToResponse(savedItem);
     }
@@ -123,6 +134,8 @@ public class InventoryService {
         StationeryItem updatedItem = stationeryItemRepository.save(existingItem);
         log.info("AUDIT: Successfully updated stationery item with ID: {}", id);
 
+        auditService.log("SYSTEM", "UPDATE", "StationeryItem", updatedItem.getId(), existingItem.getName(), updatedItem.getName());
+
         return mapToResponse(updatedItem);
     }
 
@@ -138,6 +151,8 @@ public class InventoryService {
         stationeryItemRepository.delete(item);
         log.info("AUDIT: Successfully deleted stationery item with ID: {}, name: '{}'",
                 id, item.getName());
+
+        auditService.log("SYSTEM", "DELETE", "StationeryItem", id, item.getName(), null);
     }
 
     // Find items below minimum threshold. Filter in memory for now; use DB query if this becomes a bottleneck.
