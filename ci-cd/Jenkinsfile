@@ -17,9 +17,8 @@ pipeline {
         stage('Run Tests') {
             steps {
                 dir('backend') {
-                    echo '🧪 Running backend tests and generating JaCoCo reports (will enforce 70% threshold)'
-                    // Run tests, generate jacoco report and check coverage. jacoco:check will fail the build
-                    // if the coverage rules in the POM are not met (configured at 70%).
+                    echo '🧪 Running backend tests and generating JaCoCo reports'
+                    // Run tests and generate jacoco report.
                     bat 'mvn -f pom.xml clean test -B'
                 }
                 // Publish JUnit test results so Jenkins can show test trends
