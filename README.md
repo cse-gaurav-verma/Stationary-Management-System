@@ -164,6 +164,10 @@ Content-Type: application/json
 
 The project includes a `Jenkinsfile` for automated builds and deployment using Docker Compose. The pipeline covers: Checkout, Parallel Maven Builds, Tests, Docker Build & Push, and Deployment.
 
+### Jenkins Prerequisites
+- **Maven 3.9+** configured as `Maven` in Global Tool Configuration
+- **JDK 21** configured as `JDK21` in Global Tool Configuration
+
 ## 🧪 Running Tests
 - **Backend:** `cd backend/<service> && mvn test`
 - **Frontend:** `cd frontend && npm test`
