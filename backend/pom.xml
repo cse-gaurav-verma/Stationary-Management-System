@@ -69,6 +69,10 @@
                         <exclude>jdk/**</exclude>
                         <exclude>java/**</exclude>
                         <exclude>javax/**</exclude>
+                        <exclude>net/bytebuddy/**</exclude>
+                        <exclude>org/mockito/**</exclude>
+                        <exclude>**/*MockitoMock*</exclude>
+                        <exclude>**/*$$EnhancerBySpringCGLIB$$*</exclude>
                     </excludes>
                     <rules>
                         <rule>
