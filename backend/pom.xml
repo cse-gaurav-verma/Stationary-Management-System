@@ -63,6 +63,13 @@
                 <version>0.8.12</version>
                 <configuration>
                     <skip>false</skip>
+                    <excludes>
+                        <exclude>sun/**</exclude>
+                        <exclude>com/sun/**</exclude>
+                        <exclude>jdk/**</exclude>
+                        <exclude>java/**</exclude>
+                        <exclude>javax/**</exclude>
+                    </excludes>
                     <rules>
                         <rule>
                             <element>BUNDLE</element>
